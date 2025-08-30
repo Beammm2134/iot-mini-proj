@@ -10,6 +10,9 @@ import {
   Button
 } from '@mui/material';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import ArticleIcon from '@mui/icons-material/Article';
 
 // A more professional and refined dark theme
 const professionalDarkTheme = createTheme({
@@ -23,7 +26,7 @@ const professionalDarkTheme = createTheme({
     },
     background: {
       default: '#0a1929',
-      paper: 'rgba(17, 34, 51, 0.5)', // Adjusted for glassmorphism
+      paper: 'rgba(17, 34, 51, 0.5)',
     },
     success: {
       main: '#66bb6a',
@@ -86,6 +89,28 @@ const professionalDarkTheme = createTheme({
   }
 });
 
+
+const NavButton = ({ href, icon, children }) => {
+    const router = useRouter();
+    const isActive = router.pathname === href;
+
+    return (
+        <Link href={href} passHref>
+            <Button
+                startIcon={icon}
+                variant={isActive ? 'contained' : 'text'}
+                color={isActive ? 'primary' : 'inherit'}
+                sx={{
+                    fontWeight: isActive ? 'bold' : 'normal',
+                    boxShadow: isActive ? `0 0 15px ${professionalDarkTheme.palette.primary.main}` : 'none',
+                }}
+            >
+                {children}
+            </Button>
+        </Link>
+    );
+};
+
 const Layout = ({ children }) => {
   return (
     <ThemeProvider theme={professionalDarkTheme}>
@@ -101,15 +126,12 @@ const Layout = ({ children }) => {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Smart Safe Dashboard
           </Typography>
-          <Box>
-            <Link href="/" passHref>
-              <Button color="inherit">Dashboard</Button>
-            </Link>
-            <Link href="/log" passHref>
-              <Button color="inherit">Sensor Log</Button>
-            </Link>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <NavButton href="/" icon={<DashboardIcon />}>Dashboard</NavButton>
+            <NavButton href="/log" icon={<ArticleIcon />}>Sensor Log</NavButton>
           </Box>
-          <Typography variant="body2" sx={{ ml: 4 }}>
+          <Box sx={{ flexGrow: 1 }} />
+          <Typography variant="body2" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
             Project Owner: Doikham Strawberry Flavor
           </Typography>
         </Toolbar>

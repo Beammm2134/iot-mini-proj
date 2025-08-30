@@ -12,7 +12,7 @@ import Layout from '../components/Layout';
 import SensorCard from '../components/SensorCard';
 import LockControl from '../components/LockControl';
 import WarningLog from '../components/WarningLog';
-import MPU6050Chart from '../components/MPU6050Chart'; // Import the new chart
+import MPU6050Status from '../components/MPU6050Status'; // Re-import the status card
 
 // Animation variants
 const containerVariants = {
@@ -141,34 +141,32 @@ export default function Home() {
             animate="visible"
           >
             {/* Sensor Data */}
-            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
+            <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
               <SensorCard title="Hit Sensor" value={sensorData.hit === 1 ? 'HIT!' : 'OK'} />
             </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
+            <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
               <SensorCard title="PIR Sensor" value={sensorData.pir === 1 ? 'Motion' : 'No Motion'} />
             </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
+            <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
               <SensorCard title="LDR Sensor" value={sensorData.ldr_value ?? 'N/A'} />
             </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
+            <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
               <SensorCard title="Reed Switch" value={sensorData.reed_switch === 1 ? 'Open' : 'Closed'} />
             </Grid>
-            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
+            <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
                 <SensorCard title="Temperature" value={`${sensorData.temperature ?? 'N/A'}°C`} />
             </Grid>
-
-            {/* MPU6050 Chart */}
-            <Grid item xs={12} component={motion.div} variants={itemVariants}>
-                <MPU6050Chart latestData={sensorData} isSafe={mpu6050Safe} />
+            <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
+                <MPU6050Status isSafe={mpu6050Safe} />
             </Grid>
 
             {/* Lock Control */}
-            <Grid item xs={12} md={6} component={motion.div} variants={itemVariants}>
+            <Grid item xs={12} component={motion.div} variants={itemVariants}>
               <LockControl />
             </Grid>
 
             {/* Warning Log */}
-            <Grid item xs={12} md={6} component={motion.div} variants={itemVariants}>
+            <Grid item xs={12} component={motion.div} variants={itemVariants}>
               <WarningLog log={warningLog} />
             </Grid>
             <Grid item xs={12} component={motion.div} variants={itemVariants}>
