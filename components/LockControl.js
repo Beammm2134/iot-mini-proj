@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Card, CardContent, Typography, TextField, Button, Box, CircularProgress, Snackbar, Alert } from '@mui/material';
-import { Lock, LockOpen } from '@mui/icons-material';
+import { Card, CardContent, Typography, TextField, Button, Box, CircularProgress, Snackbar, Alert, Chip } from '@mui/material';
+import { Lock, LockOpen, VpnKey } from '@mui/icons-material';
 
 const CORRECT_PASSWORD = 'iloveiot';
 
@@ -23,6 +23,7 @@ const LockControl = () => {
       setError('');
     } else {
       setError('Incorrect password. Please try again.');
+      setPassword('');
     }
   };
 
@@ -56,12 +57,12 @@ const LockControl = () => {
 
   return (
     <Card>
-      <CardContent>
+      <CardContent sx={{ '&:last-child': { pb: 2 } }}>
         <Typography variant="h5" gutterBottom>
           Lock Control
         </Typography>
         {!isAuthenticated ? (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
             <TextField
               type="password"
               label="Enter Password"
@@ -71,62 +72,56 @@ const LockControl = () => {
               onChange={handlePasswordChange}
               error={!!error}
               helperText={error}
+              fullWidth
             />
-            <Button variant="contained" onClick={handlePasswordSubmit}>
-              Submit
+            <Button
+                variant="contained"
+                onClick={handlePasswordSubmit}
+                startIcon={<VpnKey />}
+                sx={{ height: '40px' }}
+            >
+              Unlock Access
             </Button>
           </Box>
         ) : (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-             <Typography variant="h6">
-              Status: <strong>{lockStatus}</strong>
-            </Typography>
-            <Box sx={{ position: 'relative' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Chip
+                icon={lockStatus === 'Locked' ? <Lock /> : <LockOpen />}
+                label={`Status: ${lockStatus}`}
+                color={lockStatus === 'Locked' ? 'default' : 'success'}
+                variant="outlined"
+                sx={{ fontSize: '1rem', p: 2 }}
+            />
+            <Box sx={{ display: 'flex', gap: 2, position: 'relative' }}>
                 <Button
-                variant="contained"
-                color="secondary"
-                startIcon={<Lock />}
-                onClick={handleLock}
-                disabled={loading || lockStatus === 'Locked'}
+                    variant="contained"
+                    color="secondary"
+                    startIcon={<Lock />}
+                    onClick={handleLock}
+                    disabled={loading || lockStatus === 'Locked'}
                 >
-                Lock
+                    Lock
                 </Button>
-                {loading && (
-                <CircularProgress
-                    size={24}
-                    sx={{
-                    color: 'secondary.main',
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    marginTop: '-12px',
-                    marginLeft: '-12px',
-                    }}
-                />
-                )}
-            </Box>
-            <Box sx={{ position: 'relative' }}>
                 <Button
-                variant="contained"
-                color="primary"
-                startIcon={<LockOpen />}
-                onClick={handleUnlock}
-                disabled={loading || lockStatus === 'Unlocked'}
+                    variant="contained"
+                    color="primary"
+                    startIcon={<LockOpen />}
+                    onClick={handleUnlock}
+                    disabled={loading || lockStatus === 'Unlocked'}
                 >
-                Unlock
+                    Unlock
                 </Button>
-                {loading && (
-                <CircularProgress
-                    size={24}
-                    sx={{
-                    color: 'primary.main',
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    marginTop: '-12px',
-                    marginLeft: '-12px',
-                    }}
-                />
+                 {loading && (
+                    <CircularProgress
+                        size={24}
+                        sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        marginTop: '-12px',
+                        marginLeft: '-12px',
+                        }}
+                    />
                 )}
             </Box>
           </Box>

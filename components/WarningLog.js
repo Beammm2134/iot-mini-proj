@@ -24,20 +24,23 @@ const WarningLog = ({ log }) => {
                 Warning Log
             </Typography>
         </Box>
-        <TableContainer component={Paper}>
+        <TableContainer component={Paper} sx={{ border: '1px solid rgba(255, 255, 255, 0.12)' }}>
           <Table sx={{ minWidth: 650 }} aria-label="warning log table">
-            <TableHead>
+            <TableHead sx={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}>
               <TableRow>
-                <TableCell>Timestamp</TableCell>
-                <TableCell>Event Description</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Timestamp</TableCell>
+                <TableCell sx={{ fontWeight: 'bold' }}>Event Description</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {log.length > 0 ? (
                 log.map((entry, index) => (
-                  <TableRow key={index}>
+                  <TableRow
+                    key={index}
+                    sx={{ '&:nth-of-type(odd)': { backgroundColor: 'rgba(255, 255, 255, 0.02)' } }}
+                  >
                     <TableCell>{entry.timestamp}</TableCell>
-                    <TableCell>{entry.message}</TableCell>
+                    <TableCell sx={{ color: 'warning.main' }}>{entry.message}</TableCell>
                   </TableRow>
                 ))
               ) : (

@@ -18,18 +18,21 @@ import {
 const LogTable = ({ title, headers, data, keyField = 'timestamp' }) => (
   <Box sx={{ mb: 4 }}>
     <Typography variant="h5" gutterBottom>{title}</Typography>
-    <TableContainer component={Paper}>
+    <TableContainer component={Paper} sx={{ border: '1px solid rgba(255, 255, 255, 0.12)' }}>
       <Table sx={{ minWidth: 650 }} aria-label={`${title} table`}>
-        <TableHead>
+        <TableHead sx={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}>
           <TableRow>
             {headers.map((header) => (
-              <TableCell key={header.key} align={header.align || 'left'}>{header.label}</TableCell>
+              <TableCell key={header.key} align={header.align || 'left'} sx={{ fontWeight: 'bold' }}>{header.label}</TableCell>
             ))}
           </TableRow>
         </TableHead>
         <TableBody>
           {data.length > 0 ? data.map((row) => (
-            <TableRow key={row[keyField]}>
+            <TableRow
+                key={row[keyField]}
+                sx={{ '&:nth-of-type(odd)': { backgroundColor: 'rgba(255, 255, 255, 0.02)' } }}
+            >
               {headers.map((header) => (
                 <TableCell key={`${row[keyField]}-${header.key}`} align={header.align || 'left'}>
                   {header.key === 'timestamp' || header.key === 'created_at' ? new Date(row[header.key]).toLocaleString() : row[header.key]}
