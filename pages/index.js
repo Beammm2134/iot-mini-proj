@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabaseClient';
 import {
   Typography,
   Grid,
+  CircularProgress,
+  Box
 } from '@mui/material';
 
 import Layout from '../components/Layout';
@@ -15,11 +17,13 @@ export default function Home() {
   const [sensorData, setSensorData] = useState(null);
   const [warningLog, setWarningLog] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [mpu6050Safe, setMpu6050Safe] = useState(true);
 
   const LDR_THRESHOLD = 500; // Example threshold, adjust as needed
 
   const checkMpu6050Status = (data) => {
+    if (!data || data.accel_x === undefined) return true; // Not enough data to determine
     // Baseline from mock data, with some tolerance
     const baseAccelX = -2.32;
     const baseAccelY = 0.45;
@@ -36,44 +40,45 @@ export default function Home() {
     return true; // Safe
   };
 
-
   const fetchData = async () => {
-    const { data, error } = await supabase
-      .from('sensor_data')
-      .select('*')
-      .order('timestamp', { ascending: false })
-      .limit(1);
+    try {
+      // Fetch the latest row from each table concurrently
+      const [sensorResult, vibrationResult, pirResult] = await Promise.all([
+        supabase.from('sensor_data').select('*').order('timestamp', { ascending: false }).limit(1).single(),
+        supabase.from('vibration_data').select('*').order('timestamp', { ascending: false }).limit(1).single(),
+        supabase.from('gpio_sensor_data').select('*').eq('sensor_type', 'PIR').order('timestamp', { ascending: false }).limit(1).single()
+      ]);
 
-    if (error) {
-      console.error('Error fetching data:', error);
-      setError('Failed to fetch data');
-      return;
-    }
+      // Combine the results. Handle cases where a table might not have data.
+      const combinedData = {
+        ...(sensorResult.data || {}),
+        hit: vibrationResult.data?.value,
+        pir: pirResult.data?.value,
+        // Use the main sensor_data timestamp as the primary one for display
+        timestamp: sensorResult.data?.timestamp || new Date().toISOString(),
+      };
 
-    if (data && data.length > 0) {
-      const latestData = data[0];
-      setSensorData(latestData);
+      setSensorData(combinedData);
 
       // Check for critical events
       const newWarnings = [];
-      const eventTimestamp = new Date(latestData.timestamp).toLocaleString();
+      const eventTimestamp = new Date(combinedData.timestamp).toLocaleString();
 
-      if (latestData.hit === 1) {
+      if (combinedData.hit === 1) {
         const message = 'Critical Alert: Hit detected!';
-        // Avoid duplicate log entries for the same timestamp
         if (!warningLog.some(w => w.message === message && w.timestamp === eventTimestamp)) {
             newWarnings.push({ timestamp: eventTimestamp, message });
         }
       }
 
-      if (latestData.ldr > LDR_THRESHOLD) {
-        const message = `Critical Alert: LDR threshold exceeded (${latestData.ldr})!`;
+      if (combinedData.ldr_value > LDR_THRESHOLD) {
+        const message = `Critical Alert: LDR threshold exceeded (${combinedData.ldr_value})!`;
          if (!warningLog.some(w => w.message === message && w.timestamp === eventTimestamp)) {
             newWarnings.push({ timestamp: eventTimestamp, message });
         }
       }
 
-      const isMpuSafe = checkMpu6050Status(latestData);
+      const isMpuSafe = checkMpu6050Status(combinedData);
       if (!isMpuSafe) {
         const message = 'Critical Alert: Safe is being moved!';
         if (!warningLog.some(w => w.message === message && w.timestamp === eventTimestamp)) {
@@ -82,10 +87,15 @@ export default function Home() {
       }
       setMpu6050Safe(isMpuSafe);
 
-
       if (newWarnings.length > 0) {
         setWarningLog(prevLog => [...newWarnings, ...prevLog]);
       }
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching data:', err);
+      setError('Failed to fetch sensor data. Check console for details.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -98,8 +108,12 @@ export default function Home() {
 
   return (
     <Layout>
-        {error && <Typography color="error">{error}</Typography>}
-        {sensorData ? (
+        {error && <Typography color="error" gutterBottom>{error}</Typography>}
+        {loading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                <CircularProgress />
+            </Box>
+        ) : sensorData ? (
           <Grid container spacing={3}>
             {/* Sensor Data */}
             <Grid item xs={12} sm={6} md={4}>
@@ -109,13 +123,13 @@ export default function Home() {
               <SensorCard title="PIR Sensor" value={sensorData.pir === 1 ? 'Motion' : 'No Motion'} />
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
-              <SensorCard title="LDR Sensor" value={sensorData.ldr} />
+              <SensorCard title="LDR Sensor" value={sensorData.ldr_value ?? 'N/A'} />
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
-              <SensorCard title="Reed Switch" value={sensorData.reed === 1 ? 'Open' : 'Closed'} />
+              <SensorCard title="Reed Switch" value={sensorData.reed_switch === 1 ? 'Open' : 'Closed'} />
             </Grid>
             <Grid item xs={12} sm={6} md={4}>
-                <SensorCard title="Temperature" value={`${sensorData.temp}°C`} />
+                <SensorCard title="Temperature" value={`${sensorData.temperature ?? 'N/A'}°C`} />
             </Grid>
              <Grid item xs={12} sm={6} md={4}>
                 <MPU6050Status isSafe={mpu6050Safe} />
@@ -137,7 +151,7 @@ export default function Home() {
             </Grid>
           </Grid>
         ) : (
-          <Typography>Loading sensor data...</Typography>
+          <Typography>Could not load dashboard data.</Typography>
         )}
     </Layout>
   );
