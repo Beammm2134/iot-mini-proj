@@ -16,20 +16,20 @@ const professionalDarkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#00b0ff', // A brighter, more vibrant blue
+      main: '#00b0ff',
     },
     secondary: {
-      main: '#ff4081', // A vibrant pink for contrast
+      main: '#ff4081',
     },
     background: {
-      default: '#0a1929', // A deep navy blue instead of black
-      paper: 'rgba(17, 34, 51, 0.75)', // A semi-transparent paper color for cards
+      default: '#0a1929',
+      paper: 'rgba(17, 34, 51, 0.5)', // Adjusted for glassmorphism
     },
     success: {
       main: '#66bb6a',
     },
     warning: {
-      main: '#ffa726', // An amber/orange for warnings
+      main: '#ffa726',
     },
     error: {
         main: '#f44336',
@@ -58,7 +58,7 @@ const professionalDarkTheme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: 'rgba(10, 25, 41, 0.7)', // Semi-transparent app bar
+          backgroundColor: 'rgba(10, 25, 41, 0.7)',
           backdropFilter: 'blur(10px)',
           boxShadow: 'none',
           borderBottom: '1px solid rgba(135, 206, 250, 0.12)',
@@ -68,8 +68,10 @@ const professionalDarkTheme = createTheme({
     MuiCard: {
         styleOverrides: {
             root: {
-                border: '1px solid rgba(135, 206, 250, 0.12)',
-                borderRadius: '12px', // Softer corners
+                backgroundColor: 'rgba(17, 34, 51, 0.5)',
+                backdropFilter: 'blur(16px) saturate(180%)',
+                border: '1px solid rgba(135, 206, 250, 0.2)',
+                borderRadius: '12px',
                 boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
             }
         }
@@ -88,7 +90,6 @@ const Layout = ({ children }) => {
   return (
     <ThemeProvider theme={professionalDarkTheme}>
       <CssBaseline />
-      {/* Adding a global style for the body background */}
       <style jsx global>{`
         body {
           background: linear-gradient(180deg, #0a1929 0%, #172a45 100%);

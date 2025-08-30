@@ -6,12 +6,35 @@ import {
   CircularProgress,
   Box
 } from '@mui/material';
+import { motion } from 'framer-motion';
 
 import Layout from '../components/Layout';
 import SensorCard from '../components/SensorCard';
-import MPU6050Status from '../components/MPU6050Status';
 import LockControl from '../components/LockControl';
 import WarningLog from '../components/WarningLog';
+import MPU6050Chart from '../components/MPU6050Chart'; // Import the new chart
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+    },
+  },
+};
 
 export default function Home() {
   const [sensorData, setSensorData] = useState(null);
@@ -20,47 +43,42 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [mpu6050Safe, setMpu6050Safe] = useState(true);
 
-  const LDR_THRESHOLD = 500; // Example threshold, adjust as needed
+  const LDR_THRESHOLD = 500;
 
   const checkMpu6050Status = (data) => {
-    if (!data || data.accel_x === undefined) return true; // Not enough data to determine
-    // Baseline from mock data, with some tolerance
+    if (!data || data.accel_x === undefined) return true;
     const baseAccelX = -2.32;
     const baseAccelY = 0.45;
     const baseAccelZ = -9.22;
-    const tolerance = 1.0; // Adjust as needed
+    const tolerance = 1.0;
 
     if (
       Math.abs(data.accel_x - baseAccelX) > tolerance ||
       Math.abs(data.accel_y - baseAccelY) > tolerance ||
       Math.abs(data.accel_z - baseAccelZ) > tolerance
     ) {
-      return false; // Unsafe
+      return false;
     }
-    return true; // Safe
+    return true;
   };
 
   const fetchData = async () => {
     try {
-      // Fetch the latest row from each table concurrently
       const [sensorResult, vibrationResult, pirResult] = await Promise.all([
         supabase.from('sensor_data').select('*').order('timestamp', { ascending: false }).limit(1).single(),
         supabase.from('vibration_data').select('*').order('timestamp', { ascending: false }).limit(1).single(),
         supabase.from('gpio_sensor_data').select('*').eq('sensor_type', 'PIR').order('timestamp', { ascending: false }).limit(1).single()
       ]);
 
-      // Combine the results. Handle cases where a table might not have data.
       const combinedData = {
         ...(sensorResult.data || {}),
         hit: vibrationResult.data?.value,
         pir: pirResult.data?.value,
-        // Use the main sensor_data timestamp as the primary one for display
         timestamp: sensorResult.data?.timestamp || new Date().toISOString(),
       };
 
       setSensorData(combinedData);
 
-      // Check for critical events
       const newWarnings = [];
       const eventTimestamp = new Date(combinedData.timestamp).toLocaleString();
 
@@ -100,11 +118,11 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchData(); // Fetch data on initial load
-    const interval = setInterval(fetchData, 5000); // Refresh every 5 seconds
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
+  }, [warningLog]);
 
-    return () => clearInterval(interval); // Cleanup interval on component unmount
-  }, [warningLog]); // re-run effect if warningLog changes to avoid duplicates on fast refreshes
 
   return (
     <Layout>
@@ -114,37 +132,46 @@ export default function Home() {
                 <CircularProgress />
             </Box>
         ) : sensorData ? (
-          <Grid container spacing={3}>
+          <Grid
+            container
+            spacing={3}
+            component={motion.div}
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
             {/* Sensor Data */}
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
               <SensorCard title="Hit Sensor" value={sensorData.hit === 1 ? 'HIT!' : 'OK'} />
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
               <SensorCard title="PIR Sensor" value={sensorData.pir === 1 ? 'Motion' : 'No Motion'} />
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
               <SensorCard title="LDR Sensor" value={sensorData.ldr_value ?? 'N/A'} />
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
               <SensorCard title="Reed Switch" value={sensorData.reed_switch === 1 ? 'Open' : 'Closed'} />
             </Grid>
-            <Grid item xs={12} sm={6} md={4}>
+            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
                 <SensorCard title="Temperature" value={`${sensorData.temperature ?? 'N/A'}°C`} />
             </Grid>
-             <Grid item xs={12} sm={6} md={4}>
-                <MPU6050Status isSafe={mpu6050Safe} />
+
+            {/* MPU6050 Chart */}
+            <Grid item xs={12} component={motion.div} variants={itemVariants}>
+                <MPU6050Chart latestData={sensorData} isSafe={mpu6050Safe} />
             </Grid>
 
             {/* Lock Control */}
-            <Grid item xs={12}>
+            <Grid item xs={12} md={6} component={motion.div} variants={itemVariants}>
               <LockControl />
             </Grid>
 
             {/* Warning Log */}
-            <Grid item xs={12}>
+            <Grid item xs={12} md={6} component={motion.div} variants={itemVariants}>
               <WarningLog log={warningLog} />
             </Grid>
-            <Grid item xs={12}>
+            <Grid item xs={12} component={motion.div} variants={itemVariants}>
                 <Typography variant="caption" align="center" sx={{ display: 'block', mt: 2 }}>
                     Last updated: {new Date(sensorData.timestamp).toLocaleString()}
                 </Typography>
