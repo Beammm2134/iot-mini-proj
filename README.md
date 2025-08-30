@@ -11,7 +11,7 @@ The dashboard is built with Next.js and Material-UI, and it fetches data from a 
 - **MPU6050 Status**: A clear visual indicator shows whether the safe is in a "Safe" or "Unsafe" state based on accelerometer data.
 - **Critical Alerts**: The system raises alerts for critical events, such as a hit being detected, the LDR sensor exceeding a certain threshold, or unexpected movement.
 - **Warning Log**: A persistent log records all critical alerts with a timestamp and a description of the event.
-- **Password-Protected Lock Control**: The dashboard provides Lock/Unlock buttons that are only enabled after entering the correct password (`iloveiot`).
+- **Password-Protected Lock Control**: The dashboard provides Lock/Unlock buttons that are only enabled after entering the correct password (`iloveiot`). The lock/unlock actions are sent to a configurable API endpoint.
 
 ## Technical Overview
 
@@ -44,26 +44,22 @@ To get a local copy up and running, follow these simple steps.
 
 3.  **Set up environment variables:**
 
-    The Supabase client is configured in `lib/supabaseClient.js`. For production and security, it's highly recommended to use environment variables.
+    For production and security, it's highly recommended to use environment variables. Create a `.env.local` file in the root of your project and add the following variables. You can use `.env.local.example` as a template.
 
-    Create a `.env.local` file in the root of your project and add your Supabase credentials:
-
+    **Supabase Credentials:**
     ```env
     NEXT_PUBLIC_SUPABASE_URL=https://rxcpcrvvatwwoeeehvqp.supabase.co
     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
     ```
 
-    Then, update `lib/supabaseClient.js` to use these variables:
-
-    ```javascript
-    // lib/supabaseClient.js
-    import { createClient } from '@supabase/supabase-js'
-
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+    **Pi Servo Credentials:**
+    These variables are used to connect to the API that controls the physical lock.
+    ```env
+    PI_SERVO_URL=https://your-ngrok-url.ngrok-free.app/
+    PI_SERVO_SECRET=your_secret_for_signing_requests
     ```
+    **Note:** The `PI_SERVO_URL` is likely from a service like ngrok and may be temporary. You will need to update it if the URL changes.
+
 
 ### Running the Application
 
@@ -81,4 +77,4 @@ This application is optimized for deployment on [Vercel](https://vercel.com/), t
 
 To deploy, simply push your code to a Git repository (e.g., GitHub, GitLab) and connect your repository to Vercel. Vercel will automatically detect that you are using Next.js and configure the build settings for you.
 
-Remember to set up the environment variables for your Supabase credentials in the Vercel project settings.
+Remember to set up all the environment variables (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `PI_SERVO_URL`, `PI_SERVO_SECRET`) in the Vercel project settings.
