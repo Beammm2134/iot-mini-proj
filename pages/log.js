@@ -81,9 +81,9 @@ const SensorLogPage = () => {
 
   const tableHeaders = [
     { key: 'timestamp', label: 'Timestamp' },
-    { key: 'vibration_detected', label: 'Vibration', align: 'right' },
+    { key: 'vibration_detected', label: 'Hit', align: 'right' }, // Renamed
     { key: 'motion_detected', label: 'Motion', align: 'right' },
-    { key: 'ldr_value', label: 'LDR', align: 'right' },
+    // LDR value removed
     { key: 'reed_switch', label: 'Reed', align: 'right' },
     { key: 'temperature', label: 'Temp (°C)', align: 'right' },
     { key: 'accel_x', label: 'Accel X', align: 'right' },

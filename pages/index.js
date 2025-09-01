@@ -43,8 +43,6 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [mpu6050Safe, setMpu6050Safe] = useState(true);
 
-  const LDR_THRESHOLD = 500; // Example threshold, adjust as needed
-
   const checkMpu6050Status = (data) => {
     if (!data || data.accel_x === undefined) return true;
     const baseAccelX = -2.32;
@@ -81,17 +79,9 @@ export default function Home() {
       const newWarnings = [];
       const eventTimestamp = new Date(data.timestamp).toLocaleString();
 
-      // User wants vibration_detected to be a critical event in the log
       if (data.vibration_detected === 1) {
-        const message = 'Critical Alert: Vibration detected!';
+        const message = 'Critical Alert: Hit detected!'; // Updated message
         if (!warningLog.some(w => w.message === message && w.timestamp === eventTimestamp)) {
-            newWarnings.push({ timestamp: eventTimestamp, message });
-        }
-      }
-
-      if (data.ldr_value > LDR_THRESHOLD) {
-        const message = `Critical Alert: LDR threshold exceeded (${data.ldr_value})!`;
-         if (!warningLog.some(w => w.message === message && w.timestamp === eventTimestamp)) {
             newWarnings.push({ timestamp: eventTimestamp, message });
         }
       }
@@ -141,26 +131,23 @@ export default function Home() {
             animate="visible"
           >
             {/* Sensor Data */}
-            <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
-              <SensorCard title="Vibration" value={sensorData.vibration_detected === 1 ? 'DETECTED' : 'OK'} />
+            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
+              <SensorCard title="Hit Sensor" value={sensorData.vibration_detected === 1 ? 'DETECTED' : 'OK'} />
             </Grid>
-            <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
+            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
               <SensorCard
                 title="Motion (PIR)"
                 value={sensorData.motion_detected === 1 ? 'Motion' : 'No Motion'}
                 isWarning={sensorData.motion_detected === 1}
               />
             </Grid>
-            <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
-              <SensorCard title="LDR Sensor" value={sensorData.ldr_value ?? 'N/A'} />
-            </Grid>
-            <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
+            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
               <SensorCard title="Reed Switch" value={sensorData.reed_switch === 1 ? 'Open' : 'Closed'} />
             </Grid>
-            <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
+            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
                 <SensorCard title="Temperature" value={`${sensorData.temperature ?? 'N/A'}°C`} />
             </Grid>
-            <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
+            <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
                 <MPU6050Status isSafe={mpu6050Safe} />
             </Grid>
 

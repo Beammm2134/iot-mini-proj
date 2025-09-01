@@ -6,7 +6,7 @@ import {
 
 const getIcon = (title) => {
     switch (title) {
-        case 'Vibration':
+        case 'Hit Sensor': // Renamed from 'Vibration'
             return <Report fontSize="large" />;
         case 'Motion (PIR)':
             return <Sensors fontSize="large" />;
@@ -25,7 +25,7 @@ const SensorCard = ({ title, value, isWarning = false }) => {
   const theme = useTheme();
 
   const getValueColor = () => {
-    if (title === 'Vibration' && value === 'DETECTED') {
+    if (title === 'Hit Sensor' && value === 'DETECTED') { // Renamed from 'Vibration'
       return theme.palette.error.main;
     }
     if (title === 'Reed Switch' && value === 'Open') {
