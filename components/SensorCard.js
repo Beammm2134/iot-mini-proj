@@ -6,9 +6,9 @@ import {
 
 const getIcon = (title) => {
     switch (title) {
-        case 'Hit Sensor':
+        case 'Vibration':
             return <Report fontSize="large" />;
-        case 'PIR Sensor':
+        case 'Motion (PIR)':
             return <Sensors fontSize="large" />;
         case 'LDR Sensor':
             return <Opacity fontSize="large" />;
@@ -21,19 +21,28 @@ const getIcon = (title) => {
     }
 }
 
-const SensorCard = ({ title, value }) => {
+const SensorCard = ({ title, value, isWarning = false }) => {
   const theme = useTheme();
 
-  // Determine color based on value and title
   const getValueColor = () => {
-    if (title === 'Hit Sensor' && value === 'HIT!') {
+    if (title === 'Vibration' && value === 'DETECTED') {
       return theme.palette.error.main;
     }
     if (title === 'Reed Switch' && value === 'Open') {
         return theme.palette.warning.main;
     }
+    if (isWarning) {
+        return theme.palette.warning.main;
+    }
     return theme.palette.text.primary;
   };
+
+  const getIconColor = () => {
+      if (isWarning) {
+          return theme.palette.warning.main;
+      }
+      return 'text.secondary';
+  }
 
   return (
     <Card sx={{
@@ -42,14 +51,15 @@ const SensorCard = ({ title, value }) => {
         flexDirection: 'column',
         justifyContent: 'center',
         textAlign: 'center',
-        transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+        transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out',
+        backgroundColor: isWarning ? 'rgba(255, 167, 38, 0.2)' : 'inherit',
         '&:hover': {
             transform: 'scale(1.05)',
-            boxShadow: `0 0 20px ${theme.palette.primary.main}`,
+            boxShadow: `0 0 20px ${isWarning ? theme.palette.warning.main : theme.palette.primary.main}`,
         }
     }}>
       <CardContent>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1, color: 'text.secondary' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 1, color: getIconColor() }}>
             {getIcon(title)}
             <Typography variant="h6" component="div" sx={{ ml: 1 }}>
               {title}

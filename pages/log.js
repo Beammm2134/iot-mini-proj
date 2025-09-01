@@ -11,15 +11,13 @@ import {
   TableRow,
   Paper,
   CircularProgress,
-  Box,
-  Grid
+  Box
 } from '@mui/material';
 
-const LogTable = ({ title, headers, data, keyField = 'timestamp' }) => (
-  <Box sx={{ mb: 4 }}>
-    <Typography variant="h5" gutterBottom>{title}</Typography>
+// This is a simplified version of the LogTable, as we only need one now.
+const LogTable = ({ headers, data }) => (
     <TableContainer component={Paper} sx={{ border: '1px solid rgba(255, 255, 255, 0.12)' }}>
-      <Table sx={{ minWidth: 650 }} aria-label={`${title} table`}>
+      <Table sx={{ minWidth: 650 }} aria-label="Sensor Log Table">
         <TableHead sx={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}>
           <TableRow>
             {headers.map((header) => (
@@ -30,12 +28,12 @@ const LogTable = ({ title, headers, data, keyField = 'timestamp' }) => (
         <TableBody>
           {data.length > 0 ? data.map((row) => (
             <TableRow
-                key={row[keyField]}
+                key={row.id} // Assuming 'id' is a unique key
                 sx={{ '&:nth-of-type(odd)': { backgroundColor: 'rgba(255, 255, 255, 0.02)' } }}
             >
               {headers.map((header) => (
-                <TableCell key={`${row[keyField]}-${header.key}`} align={header.align || 'left'}>
-                  {header.key === 'timestamp' || header.key === 'created_at' ? new Date(row[header.key]).toLocaleString() : row[header.key]}
+                <TableCell key={`${row.id}-${header.key}`} align={header.align || 'left'}>
+                  {header.key === 'timestamp' ? new Date(row[header.key]).toLocaleString() : row[header.key]}
                 </TableCell>
               ))}
             </TableRow>
@@ -47,49 +45,44 @@ const LogTable = ({ title, headers, data, keyField = 'timestamp' }) => (
         </TableBody>
       </Table>
     </TableContainer>
-  </Box>
 );
 
 
 const SensorLogPage = () => {
-  const [logs, setLogs] = useState({ sensor: [], vibration: [], gpio: [] });
+  const [logData, setLogData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchAllLogs = async () => {
+    const fetchLogData = async () => {
       setLoading(true);
       try {
-        const [sensorRes, vibrationRes, gpioRes] = await Promise.all([
-          supabase.from('sensor_data').select('*').order('timestamp', { ascending: false }).limit(10),
-          supabase.from('vibration_data').select('*').order('timestamp', { ascending: false }).limit(10),
-          supabase.from('gpio_sensor_data').select('*').order('timestamp', { ascending: false }).limit(10)
-        ]);
+        const { data, error } = await supabase
+          .from('sensor_data')
+          .select('*')
+          .order('timestamp', { ascending: false })
+          .limit(10);
 
-        if (sensorRes.error) throw new Error(`Sensor Data Error: ${sensorRes.error.message}`);
-        if (vibrationRes.error) throw new Error(`Vibration Data Error: ${vibrationRes.error.message}`);
-        if (gpioRes.error) throw new Error(`GPIO Data Error: ${gpioRes.error.message}`);
+        if (error) throw error;
 
-        setLogs({
-          sensor: sensorRes.data,
-          vibration: vibrationRes.data,
-          gpio: gpioRes.data
-        });
+        setLogData(data);
         setError(null);
 
       } catch (err) {
-        console.error("Error fetching logs:", err);
+        console.error("Error fetching log data:", err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAllLogs();
+    fetchLogData();
   }, []);
 
-  const sensorHeaders = [
+  const tableHeaders = [
     { key: 'timestamp', label: 'Timestamp' },
+    { key: 'vibration_detected', label: 'Vibration', align: 'right' },
+    { key: 'motion_detected', label: 'Motion', align: 'right' },
     { key: 'ldr_value', label: 'LDR', align: 'right' },
     { key: 'reed_switch', label: 'Reed', align: 'right' },
     { key: 'temperature', label: 'Temp (°C)', align: 'right' },
@@ -101,21 +94,10 @@ const SensorLogPage = () => {
     { key: 'gyro_z', label: 'Gyro Z', align: 'right' },
   ];
 
-  const vibrationHeaders = [
-      { key: 'timestamp', label: 'Timestamp' },
-      { key: 'value', label: 'Value', align: 'right' },
-  ];
-
-  const gpioHeaders = [
-      { key: 'timestamp', label: 'Timestamp' },
-      { key: 'sensor_type', label: 'Sensor Type' },
-      { key: 'value', label: 'Value', align: 'right' },
-  ];
-
   return (
     <Layout>
       <Typography variant="h4" gutterBottom>
-        Sensor Data Logs (Last 10 Records Each)
+        Sensor Data Log (Last 10 Records)
       </Typography>
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -124,17 +106,7 @@ const SensorLogPage = () => {
       ) : error ? (
         <Typography color="error">{error}</Typography>
       ) : (
-        <Grid container spacing={4}>
-            <Grid item xs={12}>
-                <LogTable title="Analog Sensor Data" headers={sensorHeaders} data={logs.sensor} keyField="id" />
-            </Grid>
-            <Grid item xs={12}>
-                <LogTable title="Vibration (Hit) Sensor Data" headers={vibrationHeaders} data={logs.vibration} />
-            </Grid>
-            <Grid item xs={12}>
-                <LogTable title="GPIO Sensor Data (PIR)" headers={gpioHeaders} data={logs.gpio} keyField="id" />
-            </Grid>
-        </Grid>
+        <LogTable headers={tableHeaders} data={logData} />
       )}
     </Layout>
   );

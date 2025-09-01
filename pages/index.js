@@ -12,7 +12,7 @@ import Layout from '../components/Layout';
 import SensorCard from '../components/SensorCard';
 import LockControl from '../components/LockControl';
 import WarningLog from '../components/WarningLog';
-import MPU6050Status from '../components/MPU6050Status'; // Re-import the status card
+import MPU6050Status from '../components/MPU6050Status';
 
 // Animation variants
 const containerVariants = {
@@ -43,7 +43,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [mpu6050Safe, setMpu6050Safe] = useState(true);
 
-  const LDR_THRESHOLD = 500;
+  const LDR_THRESHOLD = 500; // Example threshold, adjust as needed
 
   const checkMpu6050Status = (data) => {
     if (!data || data.accel_x === undefined) return true;
@@ -64,39 +64,39 @@ export default function Home() {
 
   const fetchData = async () => {
     try {
-      const [sensorResult, vibrationResult, pirResult] = await Promise.all([
-        supabase.from('sensor_data').select('*').order('timestamp', { ascending: false }).limit(1).single(),
-        supabase.from('vibration_data').select('*').order('timestamp', { ascending: false }).limit(1).single(),
-        supabase.from('gpio_sensor_data').select('*').eq('sensor_type', 'PIR').order('timestamp', { ascending: false }).limit(1).single()
-      ]);
+      const { data, error } = await supabase
+        .from('sensor_data')
+        .select('*')
+        .order('timestamp', { ascending: false })
+        .limit(1)
+        .single(); // Fetch a single object
 
-      const combinedData = {
-        ...(sensorResult.data || {}),
-        hit: vibrationResult.data?.value,
-        pir: pirResult.data?.value,
-        timestamp: sensorResult.data?.timestamp || new Date().toISOString(),
-      };
+      if (error) {
+        throw error;
+      }
 
-      setSensorData(combinedData);
+      setSensorData(data);
 
+      // Check for critical events
       const newWarnings = [];
-      const eventTimestamp = new Date(combinedData.timestamp).toLocaleString();
+      const eventTimestamp = new Date(data.timestamp).toLocaleString();
 
-      if (combinedData.hit === 1) {
-        const message = 'Critical Alert: Hit detected!';
+      // User wants vibration_detected to be a critical event in the log
+      if (data.vibration_detected === 1) {
+        const message = 'Critical Alert: Vibration detected!';
         if (!warningLog.some(w => w.message === message && w.timestamp === eventTimestamp)) {
             newWarnings.push({ timestamp: eventTimestamp, message });
         }
       }
 
-      if (combinedData.ldr_value > LDR_THRESHOLD) {
-        const message = `Critical Alert: LDR threshold exceeded (${combinedData.ldr_value})!`;
+      if (data.ldr_value > LDR_THRESHOLD) {
+        const message = `Critical Alert: LDR threshold exceeded (${data.ldr_value})!`;
          if (!warningLog.some(w => w.message === message && w.timestamp === eventTimestamp)) {
             newWarnings.push({ timestamp: eventTimestamp, message });
         }
       }
 
-      const isMpuSafe = checkMpu6050Status(combinedData);
+      const isMpuSafe = checkMpu6050Status(data);
       if (!isMpuSafe) {
         const message = 'Critical Alert: Safe is being moved!';
         if (!warningLog.some(w => w.message === message && w.timestamp === eventTimestamp)) {
@@ -142,10 +142,14 @@ export default function Home() {
           >
             {/* Sensor Data */}
             <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
-              <SensorCard title="Hit Sensor" value={sensorData.hit === 1 ? 'HIT!' : 'OK'} />
+              <SensorCard title="Vibration" value={sensorData.vibration_detected === 1 ? 'DETECTED' : 'OK'} />
             </Grid>
             <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
-              <SensorCard title="PIR Sensor" value={sensorData.pir === 1 ? 'Motion' : 'No Motion'} />
+              <SensorCard
+                title="Motion (PIR)"
+                value={sensorData.motion_detected === 1 ? 'Motion' : 'No Motion'}
+                isWarning={sensorData.motion_detected === 1}
+              />
             </Grid>
             <Grid item xs={12} sm={6} md={4} component={motion.div} variants={itemVariants}>
               <SensorCard title="LDR Sensor" value={sensorData.ldr_value ?? 'N/A'} />
