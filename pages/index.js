@@ -48,7 +48,7 @@ export default function Home() {
     const baseAccelX = -2.32;
     const baseAccelY = 0.45;
     const baseAccelZ = -9.22;
-    const tolerance = 2.0;
+    const tolerance = 25.0;
 
     if (
       Math.abs(data.accel_x - baseAccelX) > tolerance ||
