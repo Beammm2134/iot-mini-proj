@@ -11,7 +11,7 @@ The dashboard is built with Next.js and Material-UI, and it fetches data from a 
 - **MPU6050 Status**: A clear visual indicator shows whether the safe is in a "Safe" or "Unsafe" state based on accelerometer data.
 - **Critical Alerts**: The system raises alerts for critical events, such as a hit being detected, the LDR sensor exceeding a certain threshold, or unexpected movement.
 - **Warning Log**: A persistent log records all critical alerts with a timestamp and a description of the event.
-- **Password-Protected Lock Control**: The dashboard provides Lock/Unlock buttons that are only enabled after entering the correct password. The lock/unlock actions are sent to a configurable API endpoint.
+- **Password-Protected Lock Control**: The dashboard provides Lock/Unlock buttons that are only enabled after entering the correct password (`iloveiot`). The lock/unlock actions are sent to a configurable API endpoint.
 
 ## Technical Overview
 

@@ -4,6 +4,23 @@ import { Lock, LockOpen, VpnKey } from '@mui/icons-material';
 
 const CORRECT_PASSWORD = 'iloveiot';
 
+// This function will send the notification without waiting for a response
+const notifyPasswordAttempt = async (success, passwordAttempt) => {
+    try {
+        await fetch('/api/notify-password-attempt', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ success, passwordAttempt }),
+        });
+        // We don't need to do anything with the response, just fire and forget.
+    } catch (error) {
+        // Also swallow errors on the client-side, but log them.
+        console.error('Failed to send password attempt notification:', error);
+    }
+};
+
 const LockControl = () => {
   const [password, setPassword] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -21,8 +38,10 @@ const LockControl = () => {
     if (password === CORRECT_PASSWORD) {
       setIsAuthenticated(true);
       setError('');
+      notifyPasswordAttempt(true); // Notify on success
     } else {
       setError('Incorrect password. Please try again.');
+      notifyPasswordAttempt(false, password); // Notify on failure with the attempted password
       setPassword('');
     }
   };
