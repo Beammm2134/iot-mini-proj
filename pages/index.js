@@ -48,7 +48,7 @@ export default function Home() {
     const baseAccelX = -2.32;
     const baseAccelY = 0.45;
     const baseAccelZ = -9.22;
-    const tolerance = 1.0;
+    const tolerance = 2.0;
 
     if (
       Math.abs(data.accel_x - baseAccelX) > tolerance ||
@@ -142,7 +142,7 @@ export default function Home() {
               />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
-              <SensorCard title="Reed Switch" value={sensorData.reed_switch === 1 ? 'Open' : 'Closed'} />
+              <SensorCard title="Reed Switch" value={sensorData.reed_switch < 1300 ? 'Closed' : 'Opened'} />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
                 <SensorCard title="Temperature" value={`${sensorData.temperature ?? 'N/A'}°C`} />
