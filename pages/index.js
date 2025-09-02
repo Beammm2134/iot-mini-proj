@@ -44,21 +44,33 @@ export default function Home() {
   const [mpu6050Safe, setMpu6050Safe] = useState(true);
 
   const checkMpu6050Status = (data) => {
-    if (!data || data.accel_x === undefined) return true;
-    const baseAccelX = -2.32;
-    const baseAccelY = 0.45;
-    const baseAccelZ = -9.22;
-    const tolerance = 25.0;
-
-    if (
-      Math.abs(data.accel_x - baseAccelX) > tolerance ||
-      Math.abs(data.accel_y - baseAccelY) > tolerance ||
-      Math.abs(data.accel_z - baseAccelZ) > tolerance
-    ) {
-      return false;
-    }
+  if (!data || data.accel_x === undefined || data.gyro_x === undefined) {
+    // If data is missing, assume it's safe to avoid false alarms
     return true;
-  };
+  }
+
+  const ax = data.accel_x;
+  const ay = data.accel_y;
+  const az = data.accel_z;
+  const gx = data.gyro_x;
+  const gy = data.gyro_y;
+  const gz = data.gyro_z;
+
+  const ACCEL_THRESHOLD = 0.8; // g
+  const GYRO_THRESHOLD = 3.0;  // °/s
+
+  // magnitude of accel
+  const accelMag = Math.sqrt(ax * ax + ay * ay + az * az);
+  const accelWithoutGravity = Math.abs(accelMag - 9.8);
+
+  // magnitude of gyro
+  const gyroMag = Math.sqrt(gx * gx + gy * gy + gz * gz);
+
+  const isMoving =
+    accelWithoutGravity > ACCEL_THRESHOLD || gyroMag > GYRO_THRESHOLD;
+
+  return !isMoving; // true = safe (not moving), false = unsafe (moving)
+};
 
   const fetchData = async () => {
     try {
@@ -142,7 +154,7 @@ export default function Home() {
               />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
-              <SensorCard title="Reed Switch" value={sensorData.reed_switch < 1300 ? 'Closed' : 'Opened'} />
+              <SensorCard title="Reed Switch" value={sensorData.reed_switch < 1500 ? 'Closed' : 'Opened'} />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
                 <SensorCard title="Temperature" value={`${sensorData.temperature ?? 'N/A'}°C`} />
