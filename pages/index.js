@@ -127,7 +127,7 @@ export default function Home() {
 
 
   return (
-    <Layout>
+    <Layout onBackgroundClick={handleHitClick}>
         {error && <Typography color="error" gutterBottom>{error}</Typography>}
         {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -144,7 +144,7 @@ export default function Home() {
           >
             {/* Sensor Data */}
             <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
-              <SensorCard title="Hit Sensor" value={hitStatus} onClick={handleHitClick} />
+              <SensorCard title="Hit Sensor" value={hitStatus} />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
               <SensorCard

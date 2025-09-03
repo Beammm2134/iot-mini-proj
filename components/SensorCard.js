@@ -21,7 +21,7 @@ const getIcon = (title) => {
     }
 }
 
-const SensorCard = ({ title, value, isWarning = false, onClick }) => {
+const SensorCard = ({ title, value, isWarning = false }) => {
   const theme = useTheme();
 
   const getValueColor = () => {
@@ -45,9 +45,7 @@ const SensorCard = ({ title, value, isWarning = false, onClick }) => {
   }
 
   return (
-    <Card
-      onClick={onClick}
-      sx={{
+    <Card sx={{
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
@@ -55,7 +53,6 @@ const SensorCard = ({ title, value, isWarning = false, onClick }) => {
         textAlign: 'center',
         transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out',
         backgroundColor: isWarning ? 'rgba(255, 167, 38, 0.2)' : 'inherit',
-        cursor: onClick ? 'pointer' : 'default',
         '&:hover': {
             transform: 'scale(1.05)',
             boxShadow: `0 0 20px ${isWarning ? theme.palette.warning.main : theme.palette.primary.main}`,

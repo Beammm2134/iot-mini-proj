@@ -111,7 +111,7 @@ const NavButton = ({ href, icon, children }) => {
     );
 };
 
-const Layout = ({ children }) => {
+const Layout = ({ children, onBackgroundClick }) => {
   return (
     <ThemeProvider theme={professionalDarkTheme}>
       <CssBaseline />
@@ -136,7 +136,7 @@ const Layout = ({ children }) => {
           </Typography>
         </Toolbar>
       </AppBar>
-      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+      <Container onClick={onBackgroundClick} maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
         {children}
       </Container>
     </ThemeProvider>
