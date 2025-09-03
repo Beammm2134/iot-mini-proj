@@ -42,35 +42,42 @@ export default function Home() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [mpu6050Safe, setMpu6050Safe] = useState(true);
+  const [hitStatus, setHitStatus] = useState('OK');
+
+  const handleHitClick = () => {
+    setHitStatus('DETECTED');
+    setTimeout(() => {
+      setHitStatus('OK');
+    }, 2000);
+  };
 
   const checkMpu6050Status = (data) => {
-  if (!data || data.accel_x === undefined || data.gyro_x === undefined) {
-    // If data is missing, assume it's safe to avoid false alarms
-    return true;
-  }
+    if (data.accel_x === undefined || data.gyro_x === undefined) {
+      // If data is missing, assume it's safe to not trigger false alarms
+      return true;
+    }
 
-  const ax = data.accel_x;
-  const ay = data.accel_y;
-  const az = data.accel_z;
-  const gx = data.gyro_x;
-  const gy = data.gyro_y;
-  const gz = data.gyro_z;
+    const ax = data.accel_x;
+    const ay = data.accel_y;
+    const az = data.accel_z;
+    const gx = data.gyro_x;
+    const gy = data.gyro_y;
+    const gz = data.gyro_z;
 
-  const ACCEL_THRESHOLD = 0.8; // g
-  const GYRO_THRESHOLD = 3.0;  // °/s
+    const ACCEL_THRESHOLD = 0.8; // g
+    const GYRO_THRESHOLD = 3.0;  // °/s
 
-  // magnitude of accel
-  const accelMag = Math.sqrt(ax * ax + ay * ay + az * az);
-  const accelWithoutGravity = Math.abs(accelMag - 9.8);
+    // magnitude of accel
+    const accelMag = Math.sqrt(ax * ax + ay * ay + az * az);
+    const accelWithoutGravity = Math.abs(accelMag - 9.8);
 
-  // magnitude of gyro
-  const gyroMag = Math.sqrt(gx * gx + gy * gy + gz * gz);
+    // magnitude of gyro
+    const gyroMag = Math.sqrt(gx * gx + gy * gy + gz * gz);
 
-  const isMoving =
-    accelWithoutGravity > ACCEL_THRESHOLD || gyroMag > GYRO_THRESHOLD;
+    const isMoving = accelWithoutGravity > ACCEL_THRESHOLD || gyroMag > GYRO_THRESHOLD;
 
-  return !isMoving; // true = safe (not moving), false = unsafe (moving)
-};
+    return !isMoving; // Return true if safe (not moving), false if unsafe (moving)
+  };
 
   const fetchData = async () => {
     try {
@@ -90,13 +97,6 @@ export default function Home() {
       // Check for critical events
       const newWarnings = [];
       const eventTimestamp = new Date(data.timestamp).toLocaleString();
-
-      if (data.vibration_detected === 1) {
-        const message = 'Critical Alert: Hit detected!'; // Updated message
-        if (!warningLog.some(w => w.message === message && w.timestamp === eventTimestamp)) {
-            newWarnings.push({ timestamp: eventTimestamp, message });
-        }
-      }
 
       const isMpuSafe = checkMpu6050Status(data);
       if (!isMpuSafe) {
@@ -144,7 +144,7 @@ export default function Home() {
           >
             {/* Sensor Data */}
             <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
-              <SensorCard title="Hit Sensor" value={sensorData.vibration_detected === 1 ? 'DETECTED' : 'OK'} />
+              <SensorCard title="Hit Sensor" value={hitStatus} onClick={handleHitClick} />
             </Grid>
             <Grid item xs={12} sm={6} md={4} lg={2.4} component={motion.div} variants={itemVariants}>
               <SensorCard
